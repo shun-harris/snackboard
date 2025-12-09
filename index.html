@@ -335,33 +335,21 @@
     <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content auth-modal">
-            <div class="auth-modal-header">
-                <div class="auth-logo">🍿</div>
-                <h2>Welcome to SnackBoard</h2>
-                <p class="auth-subtitle">Sign in to sync your tasks across all devices</p>
+            <div class="auth-header">
+                <h2>Sign in to SnackBoard</h2>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
+            <div class="auth-body">
+                <div class="auth-form-group">
+                    <input type="email" id="authEmail" placeholder="Email" autocomplete="email">
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="authPassword" placeholder="Enter your password" autocomplete="current-password">
+                <div class="auth-form-group">
+                    <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
                 </div>
-                <div class="auth-actions">
-                    <button id="signInBtn" class="btn-auth-primary">Sign In</button>
-                    <div class="auth-divider">
-                        <span>or</span>
-                    </div>
-                    <button id="signUpBtn" class="btn-auth-secondary">Create Account</button>
+                <button id="signInBtn" class="btn-auth-primary">Continue</button>
+                <div class="auth-divider">
+                    <span>New to SnackBoard?</span>
                 </div>
-                <div class="auth-footer">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 0.5C2.96 0.5 0.5 2.96 0.5 6C0.5 9.04 2.96 11.5 6 11.5C9.04 11.5 11.5 9.04 11.5 6C11.5 2.96 9.04 0.5 6 0.5ZM6.5 9H5.5V5.5H6.5V9ZM6.5 4.5H5.5V3.5H6.5V4.5Z" fill="currentColor"/>
-                    </svg>
-                    <span>Your data is private and encrypted end-to-end</span>
-                </div>
+                <button id="signUpBtn" class="btn-auth-secondary">Create an account</button>
             </div>
         </div>
     </div>
