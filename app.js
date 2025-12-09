@@ -1550,6 +1550,47 @@ function initEventListeners() {
         }
     });
     
+    // Auth event listeners
+    const authBtn = document.getElementById('authBtn');
+    if (authBtn) {
+        authBtn.addEventListener('click', () => {
+            if (typeof currentUser !== 'undefined' && currentUser) {
+                handleSignOut();
+            } else {
+                showAuthModal();
+            }
+        });
+    }
+    
+    const signInBtn = document.getElementById('signInBtn');
+    if (signInBtn) {
+        signInBtn.addEventListener('click', handleSignIn);
+    }
+    
+    const signUpBtn = document.getElementById('signUpBtn');
+    if (signUpBtn) {
+        signUpBtn.addEventListener('click', handleSignUp);
+    }
+    
+    // Auth modal close on background click
+    document.getElementById('authModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'authModal') {
+            // Only close if user is already signed in (optional sign-in)
+            if (typeof currentUser !== 'undefined' && currentUser) {
+                hideAuthModal();
+            }
+        }
+    });
+    
+    // Enter key for auth inputs
+    ['authEmail', 'authPassword'].forEach(id => {
+        document.getElementById(id)?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSignIn();
+            }
+        });
+    });
+    
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         // Ignore if typing in input
@@ -1583,6 +1624,11 @@ function init() {
     loadState();
     initEventListeners();
     render();
+    
+    // Initialize Supabase auth if available
+    if (typeof initAuth === 'function') {
+        initAuth();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);
