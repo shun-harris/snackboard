@@ -98,23 +98,46 @@ async function saveToSupabase(data = null, retries = 2) {
     };
     
     try {
-        // Use upsert with proper conflict resolution
-        const { error } = await supabase
+        // First check if record exists
+        const { data: existing, error: checkError } = await supabase
             .from('boards')
-            .upsert({
-                user_id: currentUser.id,
-                data: dataToSave,
-                updated_at: new Date().toISOString()
-            }, {
-                onConflict: 'user_id',
-                ignoreDuplicates: false
-            });
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
         
-        if (error) {
-            console.error('Error saving to Supabase:', error);
+        if (checkError && checkError.code !== 'PGRST116') {
+            console.error('Error checking existing record:', checkError);
+            throw checkError;
+        }
+        
+        let result;
+        if (existing) {
+            // Update existing record
+            result = await supabase
+                .from('boards')
+                .update({
+                    data: dataToSave,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', currentUser.id)
+                .select();
+        } else {
+            // Insert new record
+            result = await supabase
+                .from('boards')
+                .insert({
+                    user_id: currentUser.id,
+                    data: dataToSave,
+                    updated_at: new Date().toISOString()
+                })
+                .select();
+        }
+        
+        if (result.error) {
+            console.error('Error saving to Supabase:', result.error);
             
-            // Retry on conflict or network errors
-            if (retries > 0 && (error.code === '409' || error.message.includes('network'))) {
+            // Retry on specific errors
+            if (retries > 0 && (result.error.code === '23505' || result.error.code === 'PGRST116')) {
                 console.log(`Retrying save... (${retries} attempts left)`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return saveToSupabase(data, retries - 1);
