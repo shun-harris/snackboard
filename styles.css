@@ -173,7 +173,7 @@ body:has(.timer-bar:not(.hidden)) .stats-sidebar {
     align-items: center;
 }
 
-.sidebar-collapse-btn {
+.sidebar-collapse-btn, .sidebar-close-btn {
     background: transparent;
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
@@ -189,10 +189,35 @@ body:has(.timer-bar:not(.hidden)) .stats-sidebar {
     flex-shrink: 0;
 }
 
-.sidebar-collapse-btn:hover {
+.sidebar-collapse-btn:hover, .sidebar-close-btn:hover {
     background: var(--bg-hover);
     border-color: var(--accent-primary);
     color: var(--accent-primary);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-menu-btn:hover {
+    background: var(--bg-hover);
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
 }
 
 .projects-sidebar.collapsed .sidebar-header {
@@ -1786,24 +1811,306 @@ button {
     }
     
     .projects-sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        height: 100vh;
+        width: 250px;
+        z-index: 150;
+        transition: left 0.3s ease;
+        box-shadow: var(--shadow-xl);
+        background: var(--bg-secondary);
+    }
+    
+    .projects-sidebar.open {
+        left: 0;
+    }
+    
+    .mobile-menu-btn {
+        display: flex;
+    }
+    
+    .sidebar-collapse-btn {
         display: none;
+    }
+    
+    .sidebar-close-btn {
+        display: flex !important;
     }
     
     .kanban-board {
         flex-wrap: wrap;
+        padding: 12px;
     }
     
     .kanban-column {
         min-width: calc(50% - 8px);
     }
+    
+    /* Larger touch targets */
+    button, .btn, .task-card, .project-item {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .task-card {
+        padding: 14px;
+        margin-bottom: 10px;
+    }
+    
+    /* Better header spacing */
+    .app-header {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+    
+    .header-title {
+        font-size: 18px;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    /* Scrollable columns */
+    .kanban-column {
+        max-height: calc(100vh - 180px);
+    }
 }
 
 @media (max-width: 600px) {
+    /* Full-width single column layout */
     .kanban-board {
         flex-direction: column;
+        padding: 8px;
+        gap: 12px;
     }
     
     .kanban-column {
         min-width: 100%;
+        max-height: none;
+    }
+    
+    .column-header {
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    
+    /* Compact task cards */
+    .task-card {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .task-title {
+        font-size: 14px;
+    }
+    
+    .task-meta {
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 11px;
+    }
+    
+    /* Better modal sizing */
+    .modal-content {
+        width: calc(100vw - 24px);
+        max-width: 100%;
+        margin: 12px;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+    }
+    
+    .modal-header {
+        padding: 16px;
+    }
+    
+    .modal-body {
+        padding: 16px;
+    }
+    
+    .modal-footer {
+        padding: 16px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+    }
+    
+    /* Auth modal optimization */
+    .auth-modal {
+        width: calc(100vw - 32px);
+        max-width: 100%;
+        margin: 16px;
+    }
+    
+    .auth-header {
+        padding: 32px 20px 24px;
+    }
+    
+    .auth-header h2 {
+        font-size: 19px;
+    }
+    
+    .auth-body {
+        padding: 20px;
+    }
+    
+    /* Header adjustments */
+    .app-header {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+    }
+    
+    .header-title {
+        font-size: 16px;
+    }
+    
+    .header-actions button {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    /* Projects sidebar mobile */
+    .projects-sidebar {
+        width: calc(100vw - 60px);
+        max-width: 280px;
+    }
+    
+    .project-item {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* Stats sidebar mobile */
+    .stats-sidebar {
+        width: calc(100vw - 60px);
+        max-width: 300px;
+    }
+    
+    /* Focus areas */
+    .focus-chip {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* Filters */
+    .filter-section {
+        padding: 12px 16px;
+    }
+    
+    .size-filter-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    /* Form inputs */
+    input, textarea, select {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 12px;
+    }
+    
+    .auth-form-group input {
+        font-size: 16px !important;
+    }
+    
+    textarea {
+        min-height: 100px;
+    }
+    
+    /* Mobile overlay for sidebars */
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 140;
+    }
+    
+    .projects-sidebar.open ~ .mobile-overlay,
+    .stats-sidebar.open ~ .mobile-overlay {
+        display: block;
+    }
+    
+    /* Label chips */
+    .label-chip {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    /* Timer bar mobile */
+    .timer-bar {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .timer-task-title {
+        font-size: 13px;
+        max-width: 150px;
+    }
+    
+    /* New task button */
+    .btn-primary {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    /* Toast notifications */
+    .toast {
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+    }
+}
+
+/* Touch improvements for all mobile */
+@media (hover: none) and (pointer: coarse) {
+    /* Better touch targets */
+    button, a, .clickable {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px;
+    }
+    
+    /* Remove hover states on touch devices */
+    .task-card:hover {
+        transform: none;
+    }
+    
+    /* Active states instead */
+    .task-card:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+    
+    button:active, .btn:active {
+        transform: scale(0.96);
+    }
+    
+    /* Easier dragging */
+    .task-card {
+        cursor: grab;
+    }
+    
+    .task-card:active {
+        cursor: grabbing;
+    }
+    
+    /* Prevent text selection during drag */
+    .task-card {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* Better scrolling */
+    .kanban-board, .column-content {
+        -webkit-overflow-scrolling: touch;
     }
 }

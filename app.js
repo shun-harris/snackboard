@@ -1474,6 +1474,38 @@ function initEventListeners() {
         applySidebarStates();
     });
     
+    // Mobile menu toggles
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const projectsCloseBtn = document.getElementById('projectsCloseBtn');
+    const projectsSidebar = document.getElementById('projectsSidebar');
+    
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            projectsSidebar.classList.add('open');
+        });
+    }
+    
+    if (projectsCloseBtn) {
+        projectsCloseBtn.addEventListener('click', () => {
+            projectsSidebar.classList.remove('open');
+        });
+    }
+    
+    // Close sidebars when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 900) {
+            if (!projectsSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                projectsSidebar.classList.remove('open');
+            }
+            
+            const statsSidebar = document.getElementById('statsSidebar');
+            const statsToggle = document.getElementById('statsToggleBtn');
+            if (statsSidebar && !statsSidebar.contains(e.target) && (!statsToggle || !statsToggle.contains(e.target))) {
+                statsSidebar.classList.remove('open');
+            }
+        }
+    });
+    
     // Size change auto-updates estimate
     document.getElementById('taskSize').addEventListener('change', (e) => {
         document.getElementById('taskEstimate').value = e.target.value;

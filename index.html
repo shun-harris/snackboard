@@ -30,6 +30,7 @@
         <aside class="projects-sidebar" id="projectsSidebar">
             <div class="sidebar-header">
                 <h2>Projects</h2>
+                <button class="sidebar-close-btn" id="projectsCloseBtn" title="Close sidebar" style="display: none;">✕</button>
                 <button class="sidebar-collapse-btn" id="projectsCollapseBtn" title="Collapse sidebar">◀</button>
             </div>
             <div class="projects-list">
@@ -48,7 +49,10 @@
             <!-- Header with Filters -->
             <header class="board-header">
                 <div class="header-left">
-                    <h1 id="boardTitle">All Projects</h1>
+                    <div class="header-top">
+                        <button id="mobileMenuBtn" class="mobile-menu-btn" style="display: none;">☰</button>
+                        <h1 id="boardTitle">All Projects</h1>
+                    </div>
                     <div class="header-buttons">
                         <span id="userEmail" class="user-email hidden"></span>
                         <button id="authBtn" class="auth-btn">Sign In</button>
