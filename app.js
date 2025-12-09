@@ -795,51 +795,67 @@ function createTaskCard(task) {
 }
 
 function renderFilters() {
-    // Area filters (scrollable)
-    const labelFiltersContainer = document.getElementById('labelFiltersContainer');
-    labelFiltersContainer.innerHTML = '';
-    state.allLabels.forEach(label => {
-        const chip = document.createElement('div');
-        chip.className = 'filter-chip';
-        if (state.labelFilters.includes(label)) {
-            chip.classList.add('active');
-        }
-        
-        const labelText = document.createElement('span');
-        labelText.textContent = label;
-        chip.appendChild(labelText);
-        
-        const menuBtn = document.createElement('button');
-        menuBtn.className = 'filter-chip-menu-btn';
-        menuBtn.innerHTML = '⋮';
-        menuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showAreaMenu(label, e);
-        });
-        chip.appendChild(menuBtn);
-        
-        chip.addEventListener('click', (e) => {
-            if (!e.target.closest('.filter-chip-menu-btn')) {
-                toggleLabelFilter(label);
+    // Helper function to render label chips
+    function renderLabelChips(container) {
+        container.innerHTML = '';
+        state.allLabels.forEach(label => {
+            const chip = document.createElement('div');
+            chip.className = 'filter-chip';
+            if (state.labelFilters.includes(label)) {
+                chip.classList.add('active');
             }
+            
+            const labelText = document.createElement('span');
+            labelText.textContent = label;
+            chip.appendChild(labelText);
+            
+            const menuBtn = document.createElement('button');
+            menuBtn.className = 'filter-chip-menu-btn';
+            menuBtn.innerHTML = '⋮';
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showAreaMenu(label, e);
+            });
+            chip.appendChild(menuBtn);
+            
+            chip.addEventListener('click', (e) => {
+                if (!e.target.closest('.filter-chip-menu-btn')) {
+                    toggleLabelFilter(label);
+                }
+            });
+            
+            container.appendChild(chip);
         });
-        
-        labelFiltersContainer.appendChild(chip);
-    });
+    }
     
-    // Size filters
+    // Helper function to render size chips
+    function renderSizeChips(container) {
+        container.innerHTML = '';
+        SIZE_OPTIONS.forEach(size => {
+            const chip = document.createElement('div');
+            chip.className = 'filter-chip';
+            if (state.sizeFilters.includes(size)) {
+                chip.classList.add('active');
+            }
+            chip.textContent = `${size}m`;
+            chip.addEventListener('click', () => toggleSizeFilter(size));
+            container.appendChild(chip);
+        });
+    }
+    
+    // Desktop filters
+    const labelFiltersContainer = document.getElementById('labelFiltersContainer');
+    if (labelFiltersContainer) renderLabelChips(labelFiltersContainer);
+    
     const sizeFilters = document.getElementById('sizeFilters');
-    sizeFilters.innerHTML = '';
-    SIZE_OPTIONS.forEach(size => {
-        const chip = document.createElement('div');
-        chip.className = 'filter-chip';
-        if (state.sizeFilters.includes(size)) {
-            chip.classList.add('active');
-        }
-        chip.textContent = `${size}m`;
-        chip.addEventListener('click', () => toggleSizeFilter(size));
-        sizeFilters.appendChild(chip);
-    });
+    if (sizeFilters) renderSizeChips(sizeFilters);
+    
+    // Mobile filters
+    const mobileLabelsContainer = document.getElementById('mobileLabelsContainer');
+    if (mobileLabelsContainer) renderLabelChips(mobileLabelsContainer);
+    
+    const mobileSizeFilters = document.getElementById('mobileSizeFilters');
+    if (mobileSizeFilters) renderSizeChips(mobileSizeFilters);
     
     // Show/hide import button
     const importBtn = document.getElementById('importTasksBtn');
@@ -1329,15 +1345,28 @@ function selectProject(projectId) {
     });
     document.querySelector(`[data-project-id="${projectId}"]`).classList.add('active');
     
-    // Update board title
-    if (projectId === 'all') {
-        document.getElementById('boardTitle').textContent = 'All Projects';
-    } else {
+    // Update board title (both desktop and mobile)
+    let title = 'All Projects';
+    if (projectId !== 'all') {
         const project = state.projects.find(p => p.id === projectId);
         if (project) {
-            document.getElementById('boardTitle').textContent = project.name;
+            title = project.name;
         }
     }
+    
+    if (typeof window.syncTitles === 'function') {
+        window.syncTitles(title);
+    } else {
+        document.getElementById('boardTitle').textContent = title;
+        const mobileTitle = document.getElementById('mobileTitle');
+        if (mobileTitle) mobileTitle.textContent = title;
+    }
+    
+    // Close mobile drawer on selection
+    const projectsSidebar = document.getElementById('projectsSidebar');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    if (projectsSidebar) projectsSidebar.classList.remove('open');
+    if (mobileOverlay) mobileOverlay.classList.remove('visible');
     
     render();
 }
@@ -1474,37 +1503,94 @@ function initEventListeners() {
         applySidebarStates();
     });
     
-    // Mobile menu toggles
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    // Mobile app bar handlers
+    const mobileProjectsBtn = document.getElementById('mobileProjectsBtn');
+    const mobileStatsBtn = document.getElementById('mobileStatsBtn');
+    const mobileNewTaskBtn = document.getElementById('mobileNewTaskBtn');
     const projectsCloseBtn = document.getElementById('projectsCloseBtn');
     const projectsSidebar = document.getElementById('projectsSidebar');
+    const statsSidebar = document.getElementById('statsSidebar');
+    const mobileOverlay = document.getElementById('mobileOverlay');
     
-    if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', () => {
+    function closeMobileDrawers() {
+        projectsSidebar.classList.remove('open');
+        if (statsSidebar) statsSidebar.classList.remove('open');
+        mobileOverlay.classList.remove('visible');
+    }
+    
+    if (mobileProjectsBtn) {
+        mobileProjectsBtn.addEventListener('click', () => {
             projectsSidebar.classList.add('open');
+            mobileOverlay.classList.add('visible');
+        });
+    }
+    
+    if (mobileStatsBtn) {
+        mobileStatsBtn.addEventListener('click', () => {
+            if (statsSidebar) {
+                statsSidebar.classList.add('open');
+                mobileOverlay.classList.add('visible');
+            }
+        });
+    }
+    
+    if (mobileNewTaskBtn) {
+        mobileNewTaskBtn.addEventListener('click', () => {
+            openTaskModal();
         });
     }
     
     if (projectsCloseBtn) {
-        projectsCloseBtn.addEventListener('click', () => {
-            projectsSidebar.classList.remove('open');
+        projectsCloseBtn.addEventListener('click', closeMobileDrawers);
+    }
+    
+    const statsCloseBtn = document.getElementById('statsCloseBtn');
+    if (statsCloseBtn) {
+        statsCloseBtn.addEventListener('click', closeMobileDrawers);
+    }
+    
+    // Close on overlay click
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', closeMobileDrawers);
+    }
+    
+    // Mobile filters toggle
+    const mobileFiltersToggle = document.getElementById('mobileFiltersToggle');
+    const mobileFiltersContent = document.getElementById('mobileFiltersContent');
+    
+    if (mobileFiltersToggle && mobileFiltersContent) {
+        mobileFiltersToggle.addEventListener('click', () => {
+            mobileFiltersContent.classList.toggle('expanded');
+            const isExpanded = mobileFiltersContent.classList.contains('expanded');
+            mobileFiltersToggle.textContent = isExpanded ? 'Filters ▲' : 'Filters ▼';
         });
     }
     
-    // Close sidebars when clicking outside on mobile
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 900) {
-            if (!projectsSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-                projectsSidebar.classList.remove('open');
-            }
-            
-            const statsSidebar = document.getElementById('statsSidebar');
-            const statsToggle = document.getElementById('statsToggleBtn');
-            if (statsSidebar && !statsSidebar.contains(e.target) && (!statsToggle || !statsToggle.contains(e.target))) {
-                statsSidebar.classList.remove('open');
-            }
-        }
-    });
+    // Sync mobile filters with desktop filters
+    const activeToggle = document.getElementById('activeOnlyToggle');
+    const mobileActiveToggle = document.getElementById('mobileActiveToggle');
+    
+    if (activeToggle && mobileActiveToggle) {
+        activeToggle.addEventListener('change', () => {
+            mobileActiveToggle.checked = activeToggle.checked;
+        });
+        mobileActiveToggle.addEventListener('change', () => {
+            activeToggle.checked = mobileActiveToggle.checked;
+            activeToggle.dispatchEvent(new Event('change'));
+        });
+    }
+    
+    // Update mobile title when project changes
+    const mobileTitle = document.getElementById('mobileTitle');
+    const boardTitle = document.getElementById('boardTitle');
+    
+    function syncTitles(title) {
+        if (boardTitle) boardTitle.textContent = title;
+        if (mobileTitle) mobileTitle.textContent = title;
+    }
+    
+    // Override the original title update
+    window.syncTitles = syncTitles;
     
     // Size change auto-updates estimate
     document.getElementById('taskSize').addEventListener('change', (e) => {

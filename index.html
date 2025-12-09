@@ -25,6 +25,9 @@
         </div>
     </div>
 
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
     <div class="app-container">
         <!-- Projects Sidebar -->
         <aside class="projects-sidebar" id="projectsSidebar">
@@ -46,11 +49,20 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Header with Filters -->
-            <header class="board-header">
+            <!-- Mobile App Bar -->
+            <div class="mobile-app-bar">
+                <button id="mobileProjectsBtn" class="mobile-app-bar-btn" title="Projects">☰</button>
+                <h1 id="mobileTitle" class="mobile-app-bar-title">All Projects</h1>
+                <div class="mobile-app-bar-actions">
+                    <button id="mobileStatsBtn" class="mobile-app-bar-btn" title="Stats">📊</button>
+                    <button id="mobileNewTaskBtn" class="mobile-app-bar-btn mobile-new-task" title="New Task">+</button>
+                </div>
+            </div>
+
+            <!-- Desktop Header with Filters -->
+            <header class="board-header desktop-header">
                 <div class="header-left">
                     <div class="header-top">
-                        <button id="mobileMenuBtn" class="mobile-menu-btn" style="display: none;">☰</button>
                         <h1 id="boardTitle">All Projects</h1>
                     </div>
                     <div class="header-buttons">
@@ -81,6 +93,31 @@
                     </div>
                 </div>
             </header>
+
+            <!-- Mobile Filters (Collapsible) -->
+            <div class="mobile-filters-container">
+                <button id="mobileFiltersToggle" class="mobile-filters-toggle">Filters ▼</button>
+                <div id="mobileFiltersContent" class="mobile-filters-content">
+                    <div class="mobile-filter-section">
+                        <label>Focuses:</label>
+                        <div class="filter-chips-scroll">
+                            <div class="filter-chips-container" id="mobileLabelsContainer"></div>
+                            <button id="mobileAddAreaBtn" class="add-area-btn">+ Add</button>
+                        </div>
+                    </div>
+                    <div class="mobile-filter-section">
+                        <label>Size:</label>
+                        <div id="mobileSizeFilters" class="filter-chips"></div>
+                    </div>
+                    <div class="mobile-filter-section">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="mobileActiveToggle" class="toggle-input">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">Active Only</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
 
             <!-- Kanban Board -->
             <div class="kanban-board">
