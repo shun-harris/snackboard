@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snackboard - Quick Task Timer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Active Timer Bar -->
+    <div id="timerBar" class="timer-bar hidden">
+        <div class="timer-content">
+            <span class="timer-label">Working on:</span>
+            <span id="timerTaskTitle" class="timer-task-title"></span>
+            <span id="timerElapsed" class="timer-elapsed">00:00</span>
+            <button id="timerStopBtn" class="timer-stop-btn">Stop</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Projects Sidebar -->
+        <aside class="projects-sidebar" id="projectsSidebar">
+            <div class="sidebar-header">
+                <h2>Projects</h2>
+                <button class="sidebar-collapse-btn" id="projectsCollapseBtn" title="Collapse sidebar">◀</button>
+            </div>
+            <div class="projects-list">
+                <div class="project-item active" data-project-id="all">
+                    <div class="project-info">
+                        <span class="project-name">All Projects</span>
+                    </div>
+                </div>
+                <div id="projectsList"></div>
+                <button id="newProjectBtn" class="new-project-btn">+ New Project</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header with Filters -->
+            <header class="board-header">
+                <div class="header-left">
+                    <h1 id="boardTitle">All Projects</h1>
+                    <div class="header-buttons">
+                        <button id="importTasksBtn" class="import-tasks-btn hidden">Import Tasks</button>
+                        <button id="newTaskBtn" class="new-task-btn">+ New Task</button>
+                    </div>
+                </div>
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Focuses:</label>
+                        <div id="labelFilters" class="filter-chips-scroll">
+                            <div class="filter-chips-container" id="labelFiltersContainer"></div>
+                            <button id="addAreaBtn" class="add-area-btn">+ Add Focus</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Size:</label>
+                        <div id="sizeFilters" class="filter-chips"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="activeOnlyToggle" class="toggle-input">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">Active Only</span>
+                        </label>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Kanban Board -->
+            <div class="kanban-board">
+                <div class="kanban-column" data-column-id="backlog">
+                    <div class="column-header">
+                        <h3>Later</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="column-tasks" id="backlog-tasks"></div>
+                </div>
+                <div class="kanban-column" data-column-id="ready">
+                    <div class="column-header">
+                        <h3>Next</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="column-tasks" id="ready-tasks"></div>
+                </div>
+                <div class="kanban-column" data-column-id="doing">
+                    <div class="column-header">
+                        <h3>Now</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="column-tasks" id="doing-tasks"></div>
+                </div>
+                <div class="kanban-column" data-column-id="done">
+                    <div class="column-header">
+                        <h3>Done</h3>
+                        <span class="task-count">0</span>
+                    </div>
+                    <div class="column-tasks" id="done-tasks"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Stats Sidebar -->
+        <aside class="stats-sidebar" id="statsSidebar">
+            <button class="stats-toggle-btn" id="statsToggleBtn">
+                <span class="stats-toggle-icon">📊</span>
+            </button>
+            <div class="stats-header">
+                <h2>Today's Stats</h2>
+                <button class="sidebar-collapse-btn" id="statsCollapseBtn" title="Collapse sidebar">▶</button>
+                <button class="stats-close-btn" id="statsCloseBtn">×</button>
+            </div>
+            <div class="stats-content">
+                <div class="stat-card">
+                    <div class="stat-label">Total Time Today</div>
+                    <div id="totalTimeToday" class="stat-value">0m</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Estimate vs Actual</div>
+                    <div id="estimateVsActual" class="stat-value">-</div>
+                </div>
+                <div class="stat-section">
+                    <h3>By Focus</h3>
+                    <div id="statsByLabel" class="stats-list"></div>
+                </div>
+                <div class="stat-section">
+                    <h3>By Project</h3>
+                    <div id="statsByProject" class="stats-list"></div>
+                </div>
+                <div id="selectedProjectStats" class="stat-section hidden">
+                    <h3>Selected Project</h3>
+                    <div id="projectStatsContent" class="stats-list"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div id="taskModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Task Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="prompt-only-checkbox">
+                    <input type="checkbox" id="taskIsPromptOnly">
+                    <label for="taskIsPromptOnly">Prompt only (no timer)</label>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="taskTitle" placeholder="Task title...">
+                </div>
+                <div class="form-group">
+                    <label>Project</label>
+                    <select id="taskProject">
+                        <option value="">No project</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Size</label>
+                        <select id="taskSize">
+                            <option value="1">1 min</option>
+                            <option value="5">5 min</option>
+                            <option value="15">15 min</option>
+                            <option value="30">30 min</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estimate (min)</label>
+                        <input type="number" id="taskEstimate" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Actual (min)</label>
+                        <input type="number" id="taskActual" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Column</label>
+                    <select id="taskColumn">
+                        <option value="backlog">Later</option>
+                        <option value="ready">Next</option>
+                        <option value="doing">Now</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Focuses</label>
+                    <div id="taskLabels" class="labels-input"></div>
+                    <input type="text" id="newLabelInput" placeholder="Add focus..." class="new-label-input">
+                </div>
+                <div class="form-group" id="aiPromptGroup">
+                    <label>AI Prompt</label>
+                    <textarea id="taskAiPrompt" rows="6" placeholder="Enter your AI prompt here..."></textarea>
+                    <button type="button" class="copy-prompt-btn" id="copyPromptBtn">📋 Copy Prompt</button>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="taskNotes" rows="4" placeholder="Additional notes..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button id="deleteTaskBtn" class="btn-danger">Delete Task</button>
+                    <div class="modal-actions-right">
+                        <button id="cancelTaskBtn" class="btn-secondary">Cancel</button>
+                        <button id="saveTaskBtn" class="btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div id="projectModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="projectModalTitle">Project Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" id="projectName" placeholder="Project name...">
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="projectColor" value="#6366f1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Primary Focus</label>
+                    <select id="projectPrimaryArea">
+                        <option value="">No Focus</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="projectNotes" rows="4" placeholder="Project notes..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button id="deleteProjectBtn" class="btn-danger">Delete Project</button>
+                    <div class="modal-actions-right">
+                        <button id="cancelProjectBtn" class="btn-secondary">Cancel</button>
+                        <button id="saveProjectBtn" class="btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Area Menu Modal -->
+    <div id="areaMenuModal" class="context-menu hidden">
+        <div class="context-menu-item" id="renameAreaMenuItem">Rename Focus</div>
+        <div class="context-menu-item danger" id="deleteAreaMenuItem">Delete Focus</div>
+    </div>
+
+    <!-- Add Area Modal -->
+    <div id="addAreaModal" class="modal hidden">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Add New Focus</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Focus Name</label>
+                    <input type="text" id="newAreaName" placeholder="e.g., Coding, Studio, Design...">
+                </div>
+                <div class="modal-actions">
+                    <div class="modal-actions-right">
+                        <button id="cancelAddAreaBtn" class="btn-secondary">Cancel</button>
+                        <button id="saveAddAreaBtn" class="btn-primary">Add Focus</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Area Modal -->
+    <div id="renameAreaModal" class="modal hidden">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Rename Focus</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Focus Name</label>
+                    <input type="text" id="renameAreaName" placeholder="New focus name...">
+                </div>
+                <div class="modal-actions">
+                    <div class="modal-actions-right">
+                        <button id="cancelRenameAreaBtn" class="btn-secondary">Cancel</button>
+                        <button id="saveRenameAreaBtn" class="btn-primary">Rename</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Tasks Modal -->
+    <div id="importTasksModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Import Tasks</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Paste CSV Content</label>
+                    <textarea id="importCSV" rows="10" placeholder="Title,Focus,Size,Column,Type&#10;Buy domain,CRM,5m,Next&#10;Write AI prompt,Studio,5m,Later,prompt&#10;Design hero section,Studio,15m,Later"></textarea>
+                </div>
+                <div class="import-instructions">
+                    <strong>Format:</strong> First line must be: <code>Title,Focus,Size,Column</code><br>
+                    <strong>Optional:</strong> Add <code>,Type</code> column (use "prompt" for prompt-only tasks)<br>
+                    <strong>Size:</strong> 1m, 5m, 15m, or 30m<br>
+                    <strong>Column:</strong> Later, Next, Now, or Done<br>
+                    All tasks will be added to the current project.
+                </div>
+                <div id="importResult" class="import-result hidden"></div>
+                <div class="modal-actions">
+                    <div class="modal-actions-right">
+                        <button id="cancelImportBtn" class="btn-secondary">Cancel</button>
+                        <button id="executeImportBtn" class="btn-primary">Import Tasks</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
