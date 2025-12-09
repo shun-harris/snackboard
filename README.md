@@ -1,6 +1,47 @@
-# 🍿 Snackboard
+# 🍿 SnackBoard
 
 A beautiful, minimal kanban board for quick "snack tasks" during coding breaks.
+
+## 🌐 Live App
+**Visit:** https://shun-harris.github.io/snackboard/
+
+## 📱 Install as Mobile App (PWA)
+1. Open the app on your phone
+2. Tap "Share" (iOS) or "Menu" (Android)
+3. Select "Add to Home Screen"
+4. Works offline with cloud sync!
+
+## 💻 Install as Desktop App
+
+### Easiest: Chrome/Edge PWA (Auto-updates!)
+1. Open https://shun-harris.github.io/snackboard/ in Chrome or Edge
+2. Click the install icon (⊕) in the address bar
+3. Click "Install"
+4. **Automatically updates when you push to GitHub!**
+
+### Advanced: Build Native .exe with Electron
+Create a native desktop app that auto-updates from GitHub Pages:
+
+```bash
+mkdir snackboard-desktop && cd snackboard-desktop
+npm init -y
+npm install electron electron-builder
+
+# Create main.js
+echo 'const { app, BrowserWindow } = require("electron");
+function createWindow() {
+  const win = new BrowserWindow({ width: 1200, height: 800 });
+  win.loadURL("https://shun-harris.github.io/snackboard/");
+}
+app.whenReady().then(createWindow);' > main.js
+
+# Run it
+npx electron .
+
+# Or build .exe: npm install -g electron-builder && electron-builder
+```
+
+**This loads from GitHub Pages, so it auto-updates when you push code!**
 
 ## ✨ Features
 
