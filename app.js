@@ -1225,11 +1225,6 @@ function saveTask() {
         // Create new task
         const task = createTask(title, projectId, columnId);
         updateTask(task.id, updates);
-            sizeId,
-            estimateMinutes,
-            notes,
-            labels
-        });
     }
     
     // Update all labels list
@@ -1564,12 +1559,20 @@ function initEventListeners() {
     
     const signInBtn = document.getElementById('signInBtn');
     if (signInBtn) {
-        signInBtn.addEventListener('click', handleSignIn);
+        signInBtn.addEventListener('click', async () => {
+            if (typeof handleSignIn === 'function') {
+                await handleSignIn();
+            }
+        });
     }
     
     const signUpBtn = document.getElementById('signUpBtn');
     if (signUpBtn) {
-        signUpBtn.addEventListener('click', handleSignUp);
+        signUpBtn.addEventListener('click', async () => {
+            if (typeof handleSignUp === 'function') {
+                await handleSignUp();
+            }
+        });
     }
     
     // Auth modal close on background click
