@@ -227,11 +227,15 @@ async function handleSignOut() {
     }
 }
 
-// Override the original saveState to use Supabase
-const originalSaveState = saveState;
-saveState = function() {
-    originalSaveState(); // Still save to localStorage as backup
-    if (currentUser) {
-        saveToSupabase(); // Also save to Supabase
+// Override saveState when app.js loads
+window.addEventListener('DOMContentLoaded', () => {
+    if (typeof saveState === 'function') {
+        const originalSaveState = saveState;
+        window.saveState = function() {
+            originalSaveState(); // Still save to localStorage as backup
+            if (currentUser) {
+                saveToSupabase(); // Also save to Supabase
+            }
+        };
     }
-};
+});
