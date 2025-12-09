@@ -192,74 +192,183 @@
 
     <!-- Task Detail Modal -->
     <div id="taskModal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-content wizard-modal">
             <div class="modal-header">
-                <h2 id="modalTitle">Task Details</h2>
+                <h2 id="modalTitle">Create Task</h2>
                 <button class="modal-close">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="prompt-only-checkbox">
-                    <input type="checkbox" id="taskIsPromptOnly">
-                    <label for="taskIsPromptOnly">Prompt only (no timer)</label>
+            
+            <!-- Wizard Progress -->
+            <div class="wizard-progress">
+                <div class="wizard-step" data-step="1">
+                    <div class="wizard-step-number">1</div>
+                    <div class="wizard-step-label">Basics</div>
                 </div>
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" id="taskTitle" placeholder="Task title...">
+                <div class="wizard-step-line"></div>
+                <div class="wizard-step" data-step="2">
+                    <div class="wizard-step-number">2</div>
+                    <div class="wizard-step-label">Details</div>
                 </div>
-                <div class="form-group">
-                    <label>Project</label>
-                    <select id="taskProject">
-                        <option value="">No project</option>
-                    </select>
+                <div class="wizard-step-line"></div>
+                <div class="wizard-step" data-step="3">
+                    <div class="wizard-step-number">3</div>
+                    <div class="wizard-step-label">Organize</div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Size</label>
-                        <select id="taskSize">
-                            <option value="1">1 min</option>
-                            <option value="5">5 min</option>
-                            <option value="15">15 min</option>
-                            <option value="30">30 min</option>
-                        </select>
+                <div class="wizard-step-line"></div>
+                <div class="wizard-step" data-step="4">
+                    <div class="wizard-step-number">4</div>
+                    <div class="wizard-step-label">AI Prompt</div>
+                </div>
+            </div>
+
+            <div class="modal-body wizard-body">
+                <!-- Step 1: Basics -->
+                <div class="wizard-panel" data-panel="1">
+                    <div class="wizard-panel-header">
+                        <h3>Let's start with the basics</h3>
+                        <p>What task do you want to create?</p>
                     </div>
-                    <div class="form-group">
-                        <label>Estimate (min)</label>
-                        <input type="number" id="taskEstimate" min="1">
+                    <div class="wizard-panel-content">
+                        <div class="form-group">
+                            <label>Task Title *</label>
+                            <input type="text" id="taskTitle" placeholder="e.g., Fix login bug" autofocus>
+                        </div>
+                        <div class="form-group">
+                            <label>Task Type</label>
+                            <div class="wizard-toggle-group">
+                                <button type="button" class="wizard-toggle-btn active" data-prompt-type="timed">
+                                    <span class="toggle-icon">⏱️</span>
+                                    <span class="toggle-label">Timed Task</span>
+                                    <span class="toggle-desc">Track time spent</span>
+                                </button>
+                                <button type="button" class="wizard-toggle-btn" data-prompt-type="prompt">
+                                    <span class="toggle-icon">✨</span>
+                                    <span class="toggle-label">AI Prompt</span>
+                                    <span class="toggle-desc">No timer needed</span>
+                                </button>
+                            </div>
+                            <input type="checkbox" id="taskIsPromptOnly" style="display: none;">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Actual (min)</label>
-                        <input type="number" id="taskActual" readonly>
+                </div>
+
+                <!-- Step 2: Details -->
+                <div class="wizard-panel" data-panel="2" style="display: none;">
+                    <div class="wizard-panel-header">
+                        <h3>Set your timing</h3>
+                        <p>How long will this take?</p>
+                    </div>
+                    <div class="wizard-panel-content">
+                        <div class="form-group">
+                            <label>Size Estimate</label>
+                            <div class="wizard-size-grid">
+                                <button type="button" class="wizard-size-btn" data-size="1">
+                                    <span class="size-number">1</span>
+                                    <span class="size-label">min</span>
+                                </button>
+                                <button type="button" class="wizard-size-btn" data-size="5">
+                                    <span class="size-number">5</span>
+                                    <span class="size-label">min</span>
+                                </button>
+                                <button type="button" class="wizard-size-btn" data-size="15">
+                                    <span class="size-number">15</span>
+                                    <span class="size-label">min</span>
+                                </button>
+                                <button type="button" class="wizard-size-btn" data-size="30">
+                                    <span class="size-number">30</span>
+                                    <span class="size-label">min</span>
+                                </button>
+                            </div>
+                            <select id="taskSize" style="display: none;">
+                                <option value="1">1 min</option>
+                                <option value="5">5 min</option>
+                                <option value="15">15 min</option>
+                                <option value="30">30 min</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Custom Estimate (optional)</label>
+                            <input type="number" id="taskEstimate" min="1" placeholder="Enter minutes...">
+                        </div>
+                        <input type="number" id="taskActual" style="display: none;" readonly>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Column</label>
-                    <select id="taskColumn">
-                        <option value="backlog">Later</option>
-                        <option value="ready">Next</option>
-                        <option value="doing">Now</option>
-                        <option value="done">Done</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Focuses</label>
-                    <div id="taskLabels" class="labels-input"></div>
-                    <input type="text" id="newLabelInput" placeholder="Add focus..." class="new-label-input">
-                </div>
-                <div class="form-group" id="aiPromptGroup">
-                    <label>AI Prompt</label>
-                    <textarea id="taskAiPrompt" rows="6" placeholder="Enter your AI prompt here..."></textarea>
-                    <button type="button" class="copy-prompt-btn" id="copyPromptBtn">📋 Copy Prompt</button>
-                </div>
-                <div class="form-group">
-                    <label>Notes</label>
-                    <textarea id="taskNotes" rows="4" placeholder="Additional notes..."></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button id="deleteTaskBtn" class="btn-danger">Delete Task</button>
-                    <div class="modal-actions-right">
-                        <button id="cancelTaskBtn" class="btn-secondary">Cancel</button>
-                        <button id="saveTaskBtn" class="btn-primary">Save</button>
+
+                <!-- Step 3: Organize -->
+                <div class="wizard-panel" data-panel="3" style="display: none;">
+                    <div class="wizard-panel-header">
+                        <h3>Organize your task</h3>
+                        <p>Where does this task belong?</p>
                     </div>
+                    <div class="wizard-panel-content">
+                        <div class="form-group">
+                            <label>Project</label>
+                            <select id="taskProject">
+                                <option value="">No project</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Starting Column</label>
+                            <div class="wizard-column-grid">
+                                <button type="button" class="wizard-column-btn" data-column="backlog">
+                                    <span class="column-icon">📥</span>
+                                    <span class="column-name">Later</span>
+                                </button>
+                                <button type="button" class="wizard-column-btn" data-column="ready">
+                                    <span class="column-icon">📋</span>
+                                    <span class="column-name">Next</span>
+                                </button>
+                                <button type="button" class="wizard-column-btn active" data-column="doing">
+                                    <span class="column-icon">🚀</span>
+                                    <span class="column-name">Now</span>
+                                </button>
+                                <button type="button" class="wizard-column-btn" data-column="done">
+                                    <span class="column-icon">✅</span>
+                                    <span class="column-name">Done</span>
+                                </button>
+                            </div>
+                            <select id="taskColumn" style="display: none;">
+                                <option value="backlog">Later</option>
+                                <option value="ready">Next</option>
+                                <option value="doing" selected>Now</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Focus Areas (optional)</label>
+                            <div id="taskLabels" class="labels-input"></div>
+                            <input type="text" id="newLabelInput" placeholder="Type and press Enter..." class="new-label-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: AI Prompt & Notes -->
+                <div class="wizard-panel" data-panel="4" style="display: none;">
+                    <div class="wizard-panel-header">
+                        <h3>Add AI prompt and notes</h3>
+                        <p>Optional details for your task</p>
+                    </div>
+                    <div class="wizard-panel-content">
+                        <div class="form-group" id="aiPromptGroup">
+                            <label>AI Prompt</label>
+                            <textarea id="taskAiPrompt" rows="6" placeholder="Enter your AI prompt here..."></textarea>
+                            <button type="button" class="copy-prompt-btn" id="copyPromptBtn">📋 Copy Prompt</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea id="taskNotes" rows="4" placeholder="Additional notes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wizard Navigation -->
+            <div class="wizard-footer">
+                <button id="deleteTaskBtn" class="btn-danger wizard-delete" style="display: none;">Delete Task</button>
+                <div class="wizard-nav">
+                    <button id="wizardBackBtn" class="btn-secondary" style="display: none;">← Back</button>
+                    <button id="wizardNextBtn" class="btn-primary">Next →</button>
+                    <button id="wizardSaveBtn" class="btn-primary" style="display: none;">Create Task</button>
                 </div>
             </div>
         </div>

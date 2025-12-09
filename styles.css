@@ -1721,6 +1721,271 @@ button {
     transform: scale(0.98);
 }
 
+/* Wizard Modal */
+.wizard-modal {
+    max-width: 700px;
+}
+
+.wizard-progress {
+    display: flex;
+    align-items: center;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wizard-step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.wizard-step.active .wizard-step-number {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.wizard-step.completed .wizard-step-number {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.wizard-step.completed .wizard-step-number::before {
+    content: "✓";
+}
+
+.wizard-step-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.wizard-step.active .wizard-step-label {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.wizard-step-line {
+    height: 2px;
+    flex: 1;
+    background: var(--border-color);
+    margin: 0 8px;
+    position: relative;
+    top: -20px;
+}
+
+.wizard-step.completed + .wizard-step-line {
+    background: var(--success);
+}
+
+.wizard-body {
+    padding: 32px 28px;
+    overflow-y: auto;
+    min-height: 400px;
+}
+
+.wizard-panel {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.wizard-panel-header {
+    margin-bottom: 24px;
+}
+
+.wizard-panel-header h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.wizard-panel-header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.wizard-panel-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.wizard-toggle-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.wizard-toggle-btn {
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.wizard-toggle-btn:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-hover);
+}
+
+.wizard-toggle-btn.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.toggle-icon {
+    font-size: 28px;
+}
+
+.toggle-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.toggle-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.wizard-size-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.wizard-size-btn {
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.wizard-size-btn:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.wizard-size-btn.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.size-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.size-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.wizard-column-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.wizard-column-btn {
+    padding: 16px 12px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.wizard-column-btn:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.wizard-column-btn.active {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.column-icon {
+    font-size: 24px;
+}
+
+.column-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.wizard-footer {
+    padding: 20px 28px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-tertiary);
+}
+
+.wizard-nav {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.wizard-delete {
+    margin-right: auto;
+}
+
 /* Toast Notification */
 .toast {
     position: fixed;
@@ -2111,6 +2376,62 @@ button {
         width: 36px;
         height: 36px;
         font-size: 16px;
+    }
+    
+    /* Wizard mobile */
+    .wizard-progress {
+        padding: 16px 12px 12px;
+    }
+    
+    .wizard-step-label {
+        font-size: 10px;
+    }
+    
+    .wizard-step-number {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .wizard-step-line {
+        top: -16px;
+    }
+    
+    .wizard-body {
+        padding: 24px 16px;
+        min-height: 300px;
+    }
+    
+    .wizard-panel-header h3 {
+        font-size: 19px;
+    }
+    
+    .wizard-toggle-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .wizard-size-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .wizard-column-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .wizard-footer {
+        padding: 16px 12px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .wizard-nav {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .wizard-delete {
+        width: 100%;
+        order: -1;
     }
     
     /* Column styling */

@@ -1115,6 +1115,10 @@ function executeImport() {
 // Modal Functions
 // ============================================
 
+// Wizard state
+let wizardCurrentStep = 1;
+const wizardTotalSteps = 4;
+
 function openTaskModal(taskId = null) {
     const modal = document.getElementById('taskModal');
     const isNew = !taskId;
@@ -1122,23 +1126,38 @@ function openTaskModal(taskId = null) {
     state.currentTaskId = taskId;
     
     if (isNew) {
-        // New task
-        document.getElementById('modalTitle').textContent = 'New Task';
+        // Reset wizard to step 1
+        wizardCurrentStep = 1;
+        showWizardStep(1);
+        
+        // New task - clear form
+        document.getElementById('modalTitle').textContent = 'Create Task';
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskProject').value = state.selectedProjectId !== 'all' ? state.selectedProjectId : '';
         document.getElementById('taskSize').value = '5';
-        document.getElementById('taskEstimate').value = '5';
+        document.getElementById('taskEstimate').value = '';
         document.getElementById('taskActual').value = '0';
-        document.getElementById('taskColumn').value = 'backlog';
+        document.getElementById('taskColumn').value = 'doing';
         document.getElementById('taskNotes').value = '';
         document.getElementById('taskAiPrompt').value = '';
         document.getElementById('taskIsPromptOnly').checked = false;
         document.getElementById('taskLabels').innerHTML = '';
         document.getElementById('deleteTaskBtn').style.display = 'none';
+        
+        // Reset wizard buttons
+        document.querySelectorAll('.wizard-toggle-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.wizard-toggle-btn[data-prompt-type="timed"]')?.classList.add('active');
+        document.querySelectorAll('.wizard-size-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.wizard-size-btn[data-size="5"]')?.classList.add('active');
+        document.querySelectorAll('.wizard-column-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.wizard-column-btn[data-column="doing"]')?.classList.add('active');
     } else {
-        // Edit task
+        // Edit task - skip wizard, show all fields
         const task = state.tasks.find(t => t.id === taskId);
         if (!task) return;
+        
+        wizardCurrentStep = wizardTotalSteps;
+        showWizardStep(wizardTotalSteps);
         
         document.getElementById('modalTitle').textContent = 'Edit Task';
         document.getElementById('taskTitle').value = task.title;
@@ -1151,6 +1170,20 @@ function openTaskModal(taskId = null) {
         document.getElementById('taskAiPrompt').value = task.aiPrompt || '';
         document.getElementById('taskIsPromptOnly').checked = task.isPromptOnly || false;
         
+        // Sync visual buttons with values
+        document.querySelectorAll('.wizard-toggle-btn').forEach(btn => {
+            btn.classList.toggle('active', 
+                (task.isPromptOnly && btn.dataset.promptType === 'prompt') ||
+                (!task.isPromptOnly && btn.dataset.promptType === 'timed')
+            );
+        });
+        document.querySelectorAll('.wizard-size-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.size == task.sizeId);
+        });
+        document.querySelectorAll('.wizard-column-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.column === task.columnId);
+        });
+        
         // Render labels
         const labelsContainer = document.getElementById('taskLabels');
         labelsContainer.innerHTML = '';
@@ -1161,9 +1194,6 @@ function openTaskModal(taskId = null) {
         
         document.getElementById('deleteTaskBtn').style.display = 'block';
     }
-    
-    // Update UI based on prompt-only state
-    updateTaskModalUI();
     
     // Populate project dropdown
     const projectSelect = document.getElementById('taskProject');
@@ -1176,25 +1206,60 @@ function openTaskModal(taskId = null) {
     });
     
     modal.classList.remove('hidden');
+    
+    // Focus first input
+    setTimeout(() => document.getElementById('taskTitle')?.focus(), 100);
 }
 
-function updateTaskModalUI() {
-    const isPromptOnly = document.getElementById('taskIsPromptOnly').checked;
-    const sizeGroup = document.querySelector('#taskSize').closest('.form-group');
-    const estimateGroup = document.querySelector('#taskEstimate').closest('.form-group');
-    const actualGroup = document.querySelector('#taskActual').closest('.form-group');
-    const formRow = document.querySelector('.form-row');
+function showWizardStep(step) {
+    // Update progress indicators
+    document.querySelectorAll('.wizard-step').forEach((stepEl, index) => {
+        const stepNum = index + 1;
+        stepEl.classList.remove('active', 'completed');
+        if (stepNum === step) {
+            stepEl.classList.add('active');
+        } else if (stepNum < step) {
+            stepEl.classList.add('completed');
+        }
+    });
     
-    if (isPromptOnly) {
-        // Hide time-related fields
-        formRow.style.display = 'none';
-        // Show AI prompt prominently
-        document.getElementById('aiPromptGroup').style.order = '5';
-    } else {
-        // Show time-related fields
-        formRow.style.display = 'grid';
-        document.getElementById('aiPromptGroup').style.order = '10';
+    // Show/hide panels
+    document.querySelectorAll('.wizard-panel').forEach(panel => {
+        panel.style.display = panel.dataset.panel == step ? 'block' : 'none';
+    });
+    
+    // Update buttons
+    const backBtn = document.getElementById('wizardBackBtn');
+    const nextBtn = document.getElementById('wizardNextBtn');
+    const saveBtn = document.getElementById('wizardSaveBtn');
+    
+    backBtn.style.display = step > 1 ? 'block' : 'none';
+    nextBtn.style.display = step < wizardTotalSteps ? 'block' : 'none';
+    saveBtn.style.display = step === wizardTotalSteps ? 'block' : 'none';
+    
+    // Skip step 2 for prompt-only tasks
+    const isPromptOnly = document.getElementById('taskIsPromptOnly').checked;
+    if (isPromptOnly && step === 2) {
+        showWizardStep(step < wizardCurrentStep ? 1 : 3);
     }
+}
+
+function validateWizardStep(step) {
+    if (step === 1) {
+        const title = document.getElementById('taskTitle').value.trim();
+        if (!title) {
+            showToast('Please enter a task title', 'error');
+            document.getElementById('taskTitle').focus();
+            return false;
+        }
+        
+        // Skip step 2 if prompt-only
+        const isPromptOnly = document.getElementById('taskIsPromptOnly').checked;
+        if (isPromptOnly && wizardCurrentStep === 1) {
+            wizardCurrentStep = 2; // Will skip to 3
+        }
+    }
+    return true;
 }
 
 function closeTaskModal() {
@@ -1450,14 +1515,70 @@ function initEventListeners() {
     
     // Task modal
     document.querySelector('#taskModal .modal-close').addEventListener('click', closeTaskModal);
-    document.getElementById('cancelTaskBtn').addEventListener('click', closeTaskModal);
-    document.getElementById('saveTaskBtn').addEventListener('click', saveTask);
+    
+    // Wizard navigation
+    document.getElementById('wizardBackBtn')?.addEventListener('click', () => {
+        if (wizardCurrentStep > 1) {
+            wizardCurrentStep--;
+            showWizardStep(wizardCurrentStep);
+        }
+    });
+    
+    document.getElementById('wizardNextBtn')?.addEventListener('click', () => {
+        if (validateWizardStep(wizardCurrentStep)) {
+            wizardCurrentStep++;
+            showWizardStep(wizardCurrentStep);
+        }
+    });
+    
+    document.getElementById('wizardSaveBtn')?.addEventListener('click', saveTask);
+    
     document.getElementById('deleteTaskBtn').addEventListener('click', () => {
         if (confirm('Delete this task?')) {
             deleteTask(state.currentTaskId);
             closeTaskModal();
             render();
         }
+    });
+    
+    // Wizard step clicks
+    document.querySelectorAll('.wizard-step').forEach(stepEl => {
+        stepEl.addEventListener('click', () => {
+            const targetStep = parseInt(stepEl.dataset.step);
+            if (targetStep < wizardCurrentStep) {
+                wizardCurrentStep = targetStep;
+                showWizardStep(wizardCurrentStep);
+            }
+        });
+    });
+    
+    // Wizard toggle buttons
+    document.querySelectorAll('.wizard-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.wizard-toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const isPrompt = btn.dataset.promptType === 'prompt';
+            document.getElementById('taskIsPromptOnly').checked = isPrompt;
+        });
+    });
+    
+    // Wizard size buttons
+    document.querySelectorAll('.wizard-size-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.wizard-size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const size = btn.dataset.size;
+            document.getElementById('taskSize').value = size;
+        });
+    });
+    
+    // Wizard column buttons
+    document.querySelectorAll('.wizard-column-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.wizard-column-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('taskColumn').value = btn.dataset.column;
+        });
     });
     
     // Project modal
@@ -1471,9 +1592,6 @@ function initEventListeners() {
             render();
         }
     });
-    
-    // Prompt-only checkbox toggle
-    document.getElementById('taskIsPromptOnly').addEventListener('change', updateTaskModalUI);
     
     // Copy prompt button in modal
     document.getElementById('copyPromptBtn').addEventListener('click', async () => {
