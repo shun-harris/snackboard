@@ -85,8 +85,8 @@ async function migrateLocalStorageToSupabase() {
     }
 }
 
-// Save to Supabase
-async function saveToSupabase(data = null) {
+// Save to Supabase with retry
+async function saveToSupabase(data = null, retries = 2) {
     if (!currentUser) return;
     
     const dataToSave = data || {
@@ -97,17 +97,46 @@ async function saveToSupabase(data = null) {
         rightSidebarCollapsed: state.rightSidebarCollapsed
     };
     
-    const { error } = await supabase
-        .from('boards')
-        .upsert({
-            user_id: currentUser.id,
-            data: dataToSave,
-            updated_at: new Date().toISOString()
-        });
-    
-    if (error) {
-        console.error('Error saving to Supabase:', error);
+    try {
+        // Use upsert with proper conflict resolution
+        const { error } = await supabase
+            .from('boards')
+            .upsert({
+                user_id: currentUser.id,
+                data: dataToSave,
+                updated_at: new Date().toISOString()
+            }, {
+                onConflict: 'user_id',
+                ignoreDuplicates: false
+            });
+        
+        if (error) {
+            console.error('Error saving to Supabase:', error);
+            
+            // Retry on conflict or network errors
+            if (retries > 0 && (error.code === '409' || error.message.includes('network'))) {
+                console.log(`Retrying save... (${retries} attempts left)`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return saveToSupabase(data, retries - 1);
+            }
+            
+            showToast('Failed to sync to cloud', 'error');
+            return false;
+        }
+        
+        return true;
+    } catch (err) {
+        console.error('Error in saveToSupabase:', err);
+        
+        // Retry on exception
+        if (retries > 0) {
+            console.log(`Retrying save after exception... (${retries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return saveToSupabase(data, retries - 1);
+        }
+        
         showToast('Failed to sync to cloud', 'error');
+        return false;
     }
 }
 
@@ -232,6 +261,15 @@ async function handleSignOut() {
     }
 }
 
+// Debounce helper
+let saveTimeout = null;
+function debouncedSaveToSupabase() {
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        saveToSupabase();
+    }, 500); // Wait 500ms after last change
+}
+
 // Override saveState when app.js loads
 window.addEventListener('DOMContentLoaded', () => {
     if (typeof saveState === 'function') {
@@ -239,7 +277,7 @@ window.addEventListener('DOMContentLoaded', () => {
         window.saveState = function() {
             originalSaveState(); // Still save to localStorage as backup
             if (currentUser) {
-                saveToSupabase(); // Also save to Supabase
+                debouncedSaveToSupabase(); // Debounced save to Supabase
             }
         };
     }
