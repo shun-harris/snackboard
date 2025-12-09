@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="theme-color" content="#1a1a1a">
     <meta name="description" content="A kanban task board with AI-powered prompts">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,7 +15,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>SnackBoard - Quick Task Timer</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2.0">
 </head>
 <body>
     <!-- Active Timer Bar -->
@@ -404,14 +407,18 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
-    <script src="app.js"></script>
+    <script src="supabase.js?v=2.0"></script>
+    <script src="app.js?v=2.0"></script>
     <script>
-        // Register service worker for PWA
+        // Register service worker for PWA with update check
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/snackboard/service-worker.js')
-                    .then(registration => console.log('SW registered:', registration))
+                navigator.serviceWorker.register('/snackboard/service-worker.js?v=2.0')
+                    .then(registration => {
+                        console.log('SW registered:', registration);
+                        // Force update check
+                        registration.update();
+                    })
                     .catch(err => console.log('SW registration failed:', err));
             });
         }

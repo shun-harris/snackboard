@@ -10,13 +10,18 @@ let currentUser = null;
 
 // Initialize auth
 async function initAuth() {
+    // Start with modal hidden
+    hideAuthModal();
+    
     // Check current session
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session) {
         currentUser = session.user;
         await onAuthStateChange(true);
+        hideAuthModal();
     } else {
+        // Only show modal if no session
         showAuthModal();
     }
     
