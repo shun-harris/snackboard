@@ -15,7 +15,25 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>SnackBoard - Quick Task Timer</title>
-    <link rel="stylesheet" href="styles.css?v=3.0">
+    <link rel="stylesheet" href="styles.css?v=3.1">
+    <script>
+        // Force cleanup of old service workers and caches BEFORE loading any other scripts
+        (async () => {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    console.log('SW cleanup complete');
+                } catch (err) {
+                    console.log('SW cleanup error:', err);
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Active Timer Bar -->
@@ -516,30 +534,15 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=3.0"></script>
-    <script src="app.js?v=3.0"></script>
+    <script src="supabase.js?v=3.1"></script>
+    <script src="app.js?v=3.1"></script>
     <script>
-        // Register service worker for PWA with cleanup
+        // Register new service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
                 try {
-                    // Unregister old service workers first
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (let registration of registrations) {
-                        await registration.unregister();
-                        console.log('Old SW unregistered');
-                    }
-                    
-                    // Clear all caches
-                    const cacheNames = await caches.keys();
-                    await Promise.all(cacheNames.map(name => caches.delete(name)));
-                    console.log('Caches cleared');
-                    
-                    // Register new service worker
-                    const registration = await navigator.serviceWorker.register('/snackboard/service-worker.js?v=3.0');
+                    const registration = await navigator.serviceWorker.register('/snackboard/service-worker.js?v=3.1');
                     console.log('SW registered:', registration);
-                    
-                    // Force update
                     await registration.update();
                 } catch (err) {
                     console.log('SW setup failed:', err);

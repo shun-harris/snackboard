@@ -1,5 +1,5 @@
 // Service Worker for offline support and PWA
-const CACHE_NAME = 'snackboard-v3';
+const CACHE_NAME = 'snackboard-v3.1';
 const urlsToCache = [
   '/snackboard/',
   '/snackboard/index.html',
