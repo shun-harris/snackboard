@@ -15,7 +15,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>SnackBoard - Quick Task Timer</title>
-    <link rel="stylesheet" href="styles.css?v=2.0">
+    <link rel="stylesheet" href="styles.css?v=3.0">
 </head>
 <body>
     <!-- Active Timer Bar -->
@@ -236,12 +236,12 @@
                         <div class="form-group">
                             <label>Task Type</label>
                             <div class="wizard-toggle-group">
-                                <button type="button" class="wizard-toggle-btn active" data-prompt-type="timed">
+                                <button type="button" class="wizard-toggle-btn active" data-prompt-type="timed" tabindex="0">
                                     <span class="toggle-icon">⏱️</span>
                                     <span class="toggle-label">Timed Task</span>
                                     <span class="toggle-desc">Track time spent</span>
                                 </button>
-                                <button type="button" class="wizard-toggle-btn" data-prompt-type="prompt">
+                                <button type="button" class="wizard-toggle-btn" data-prompt-type="prompt" tabindex="0">
                                     <span class="toggle-icon">✨</span>
                                     <span class="toggle-label">AI Prompt</span>
                                     <span class="toggle-desc">No timer needed</span>
@@ -310,19 +310,19 @@
                         <div class="form-group">
                             <label>Starting Column</label>
                             <div class="wizard-column-grid">
-                                <button type="button" class="wizard-column-btn" data-column="backlog">
+                                <button type="button" class="wizard-column-btn" data-column="backlog" tabindex="0">
                                     <span class="column-icon">📥</span>
                                     <span class="column-name">Later</span>
                                 </button>
-                                <button type="button" class="wizard-column-btn" data-column="ready">
+                                <button type="button" class="wizard-column-btn" data-column="ready" tabindex="0">
                                     <span class="column-icon">📋</span>
                                     <span class="column-name">Next</span>
                                 </button>
-                                <button type="button" class="wizard-column-btn active" data-column="doing">
+                                <button type="button" class="wizard-column-btn active" data-column="doing" tabindex="0">
                                     <span class="column-icon">🚀</span>
                                     <span class="column-name">Now</span>
                                 </button>
-                                <button type="button" class="wizard-column-btn" data-column="done">
+                                <button type="button" class="wizard-column-btn" data-column="done" tabindex="0">
                                     <span class="column-icon">✅</span>
                                     <span class="column-name">Done</span>
                                 </button>
@@ -516,19 +516,34 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=2.0"></script>
-    <script src="app.js?v=2.0"></script>
+    <script src="supabase.js?v=3.0"></script>
+    <script src="app.js?v=3.0"></script>
     <script>
-        // Register service worker for PWA with update check
+        // Register service worker for PWA with cleanup
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/snackboard/service-worker.js?v=2.0')
-                    .then(registration => {
-                        console.log('SW registered:', registration);
-                        // Force update check
-                        registration.update();
-                    })
-                    .catch(err => console.log('SW registration failed:', err));
+            window.addEventListener('load', async () => {
+                try {
+                    // Unregister old service workers first
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        console.log('Old SW unregistered');
+                    }
+                    
+                    // Clear all caches
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    console.log('Caches cleared');
+                    
+                    // Register new service worker
+                    const registration = await navigator.serviceWorker.register('/snackboard/service-worker.js?v=3.0');
+                    console.log('SW registered:', registration);
+                    
+                    // Force update
+                    await registration.update();
+                } catch (err) {
+                    console.log('SW setup failed:', err);
+                }
             });
         }
     </script>

@@ -1241,7 +1241,25 @@ function showWizardStep(step) {
     const isPromptOnly = document.getElementById('taskIsPromptOnly').checked;
     if (isPromptOnly && step === 2) {
         showWizardStep(step < wizardCurrentStep ? 1 : 3);
+        return;
     }
+    
+    // Auto-focus appropriate element for keyboard navigation
+    setTimeout(() => {
+        const activePanel = document.querySelector(`.wizard-panel[data-panel="${step}"]`);
+        if (activePanel) {
+            // Focus first input or first button
+            const firstInput = activePanel.querySelector('input[type="text"], textarea');
+            const firstButton = activePanel.querySelector('.wizard-size-btn, .wizard-column-btn, .wizard-toggle-btn');
+            
+            if (firstInput && step === 1) {
+                firstInput.focus();
+                firstInput.select();
+            } else if (firstButton) {
+                firstButton.focus();
+            }
+        }
+    }, 100);
 }
 
 function validateWizardStep(step) {
@@ -1516,6 +1534,15 @@ function initEventListeners() {
     // Task modal
     document.querySelector('#taskModal .modal-close').addEventListener('click', closeTaskModal);
     
+    // Global keyboard shortcut: Alt+N to open new task
+    document.addEventListener('keydown', (e) => {
+        // Alt+N for new task (doesn't conflict with browser)
+        if (e.altKey && e.key === 'n') {
+            e.preventDefault();
+            openTaskModal();
+        }
+    });
+    
     // Wizard navigation
     document.getElementById('wizardBackBtn')?.addEventListener('click', () => {
         if (wizardCurrentStep > 1) {
@@ -1532,6 +1559,110 @@ function initEventListeners() {
     });
     
     document.getElementById('wizardSaveBtn')?.addEventListener('click', saveTask);
+    
+    // Keyboard navigation in wizard
+    document.addEventListener('keydown', (e) => {
+        const modal = document.getElementById('taskModal');
+        if (modal.classList.contains('hidden')) return;
+        
+        // Enter to proceed (if not in textarea and not Ctrl)
+        if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+            const target = e.target;
+            
+            // If in textarea, Ctrl+Enter for new line is default, Enter does nothing here
+            if (target.tagName === 'TEXTAREA') {
+                return; // Let textarea handle it normally
+            }
+            
+            // If in text input, proceed to next step
+            if (target.tagName === 'INPUT' && target.type === 'text') {
+                e.preventDefault();
+                if (wizardCurrentStep < wizardTotalSteps) {
+                    const nextBtn = document.getElementById('wizardNextBtn');
+                    if (nextBtn && nextBtn.style.display !== 'none') {
+                        nextBtn.click();
+                    }
+                } else {
+                    const saveBtn = document.getElementById('wizardSaveBtn');
+                    if (saveBtn && saveBtn.style.display !== 'none') {
+                        saveBtn.click();
+                    }
+                }
+                return;
+            }
+            
+            // If focused on button or select option, activate it
+            if (target.classList.contains('wizard-size-btn') || 
+                target.classList.contains('wizard-column-btn') ||
+                target.classList.contains('wizard-toggle-btn')) {
+                e.preventDefault();
+                target.click();
+                // Auto-advance after selection
+                setTimeout(() => {
+                    if (wizardCurrentStep < wizardTotalSteps) {
+                        document.getElementById('wizardNextBtn')?.click();
+                    }
+                }, 200);
+                return;
+            }
+            
+            // General Enter to proceed
+            if (wizardCurrentStep < wizardTotalSteps) {
+                const nextBtn = document.getElementById('wizardNextBtn');
+                if (nextBtn && nextBtn.style.display !== 'none') {
+                    e.preventDefault();
+                    nextBtn.click();
+                }
+            } else {
+                const saveBtn = document.getElementById('wizardSaveBtn');
+                if (saveBtn && saveBtn.style.display !== 'none') {
+                    e.preventDefault();
+                    saveBtn.click();
+                }
+            }
+        }
+        
+        // Arrow keys for navigation
+        if (e.key === 'ArrowLeft' && wizardCurrentStep > 1) {
+            e.preventDefault();
+            wizardCurrentStep--;
+            showWizardStep(wizardCurrentStep);
+        }
+        
+        if (e.key === 'ArrowRight' && wizardCurrentStep < wizardTotalSteps) {
+            e.preventDefault();
+            if (validateWizardStep(wizardCurrentStep)) {
+                wizardCurrentStep++;
+                showWizardStep(wizardCurrentStep);
+            }
+        }
+        
+        // Arrow keys for button selection in grids
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown' || 
+             e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+            (document.activeElement.classList.contains('wizard-size-btn') ||
+             document.activeElement.classList.contains('wizard-column-btn') ||
+             document.activeElement.classList.contains('wizard-toggle-btn'))) {
+            
+            e.preventDefault();
+            const buttons = Array.from(document.activeElement.parentElement.children);
+            const currentIndex = buttons.indexOf(document.activeElement);
+            let nextIndex = currentIndex;
+            
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                nextIndex = (currentIndex + 1) % buttons.length;
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+            }
+            
+            buttons[nextIndex]?.focus();
+        }
+        
+        // Escape to close modal
+        if (e.key === 'Escape') {
+            closeTaskModal();
+        }
+    });
     
     document.getElementById('deleteTaskBtn').addEventListener('click', () => {
         if (confirm('Delete this task?')) {

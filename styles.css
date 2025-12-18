@@ -1864,9 +1864,14 @@ button {
     transition: all 0.2s ease;
 }
 
-.wizard-toggle-btn:hover {
+.wizard-toggle-btn:hover, .wizard-toggle-btn:focus {
     border-color: var(--accent-primary);
     background: var(--bg-hover);
+    outline: none;
+}
+
+.wizard-toggle-btn:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .wizard-toggle-btn.active {
@@ -1907,9 +1912,14 @@ button {
     transition: all 0.2s ease;
 }
 
-.wizard-size-btn:hover {
+.wizard-size-btn:hover, .wizard-size-btn:focus {
     border-color: var(--accent-primary);
     transform: translateY(-2px);
+    outline: none;
+}
+
+.wizard-size-btn:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .wizard-size-btn.active {
@@ -1947,9 +1957,14 @@ button {
     transition: all 0.2s ease;
 }
 
-.wizard-column-btn:hover {
+.wizard-column-btn:hover, .wizard-column-btn:focus {
     border-color: var(--accent-primary);
     transform: translateY(-2px);
+    outline: none;
+}
+
+.wizard-column-btn:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .wizard-column-btn.active {

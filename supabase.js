@@ -86,8 +86,11 @@ async function migrateLocalStorageToSupabase() {
 }
 
 // Save to Supabase with retry
+let isSaving = false;
 async function saveToSupabase(data = null, retries = 2) {
-    if (!currentUser) return;
+    if (!currentUser || isSaving) return;
+    
+    isSaving = true;
     
     const dataToSave = data || {
         projects: state.projects,
@@ -98,62 +101,47 @@ async function saveToSupabase(data = null, retries = 2) {
     };
     
     try {
-        // First check if record exists
-        const { data: existing, error: checkError } = await supabase
+        // Simple update first, insert if doesn't exist
+        const { data: result, error } = await supabase
             .from('boards')
-            .select('id')
+            .update({
+                data: dataToSave,
+                updated_at: new Date().toISOString()
+            })
             .eq('user_id', currentUser.id)
-            .maybeSingle();
+            .select();
         
-        if (checkError && checkError.code !== 'PGRST116') {
-            console.error('Error checking existing record:', checkError);
-            throw checkError;
-        }
-        
-        let result;
-        if (existing) {
-            // Update existing record
-            result = await supabase
-                .from('boards')
-                .update({
-                    data: dataToSave,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('user_id', currentUser.id)
-                .select();
-        } else {
-            // Insert new record
-            result = await supabase
+        // If no rows updated, insert
+        if (!error && (!result || result.length === 0)) {
+            const { error: insertError } = await supabase
                 .from('boards')
                 .insert({
                     user_id: currentUser.id,
                     data: dataToSave,
                     updated_at: new Date().toISOString()
-                })
-                .select();
-        }
-        
-        if (result.error) {
-            console.error('Error saving to Supabase:', result.error);
+                });
             
-            // Retry on specific errors
-            if (retries > 0 && (result.error.code === '23505' || result.error.code === 'PGRST116')) {
-                console.log(`Retrying save... (${retries} attempts left)`);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                return saveToSupabase(data, retries - 1);
+            if (insertError) {
+                // If insert fails due to duplicate (race condition), try update again
+                if (insertError.code === '23505' && retries > 0) {
+                    isSaving = false;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    return saveToSupabase(data, retries - 1);
+                }
+                throw insertError;
             }
-            
-            showToast('Failed to sync to cloud', 'error');
-            return false;
+        } else if (error) {
+            throw error;
         }
         
+        isSaving = false;
         return true;
     } catch (err) {
+        isSaving = false;
         console.error('Error in saveToSupabase:', err);
         
         // Retry on exception
         if (retries > 0) {
-            console.log(`Retrying save after exception... (${retries} attempts left)`);
             await new Promise(resolve => setTimeout(resolve, 1000));
             return saveToSupabase(data, retries - 1);
         }
